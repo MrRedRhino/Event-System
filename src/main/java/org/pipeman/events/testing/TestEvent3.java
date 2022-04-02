@@ -1,6 +1,8 @@
-package org.pipeman.events;
+package org.pipeman.events.testing;
 
-public class TestEvent2 extends Event implements Cancellable {
+import org.pipeman.events.Cancellable;
+
+public class TestEvent3 extends TestEvent2 implements Cancellable {
     @Override
     public boolean isCancelled() {
         return false;
@@ -8,6 +10,5 @@ public class TestEvent2 extends Event implements Cancellable {
 
     @Override
     public void setCancelled(boolean cancel) {
-
     }
 }

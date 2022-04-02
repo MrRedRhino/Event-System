@@ -1,15 +1,30 @@
 package org.pipeman.events;
 
-import java.lang.annotation.Annotation;
+import org.pipeman.events.testing.TestEvent;
+import org.pipeman.events.testing.TestEvent2;
+import org.pipeman.events.testing.TestEvent3;
+import org.pipeman.events.testing.TestListener;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
 public class EntrypointThing {
-    private static Map<Class<? extends Event>, List<RegisteredEventHandler>> listeners = new HashMap<>();
+    private static final Map<Class<?>, List<RegisteredEventHandler>> listeners = new HashMap<>();
 
     public static void main(String[] args) {
         registerEventHandler(new TestListener());
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    fireEvent(new TestEvent3());
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, 1000);
+
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -19,21 +34,23 @@ public class EntrypointThing {
                     throw new RuntimeException(e);
                 }
             }
-        }, 1000);
+        }, 2000);
     }
 
     public static void registerEventHandler(Listener listener) {
         Class<?> clazz = listener.getClass();
-        List<Method> eventHandlers = new ArrayList<>();
         for (Method method : clazz.getMethods()) {
-            for (Annotation a : method.getAnnotations()) {
-                if (a.annotationType().equals(EventHandler.class)) {
-                    eventHandlers.add(method);
-                    break;
+            if (method.getAnnotation(EventHandler.class) != null) {
+                if (method.getParameterCount() == 1) {
+                    Class<?> param = method.getParameterTypes()[0];
+                    if (isHighestClassEvent(param)) {
+                        if (!listeners.containsKey(param)) listeners.put(param, new ArrayList<>());
+                        listeners.get(param).add(new RegisteredEventHandler(clazz, method));
+                    }
                 }
             }
         }
-        System.out.println(eventHandlers);
+        System.out.println(listeners);
     }
 
     public static boolean fireEvent(Event event) throws InvocationTargetException, IllegalAccessException {
@@ -43,5 +60,19 @@ public class EntrypointThing {
         }
 
         return false;
+    }
+
+    private static boolean isHighestClassEvent(Class<?> clazz) {
+        Class<?> currentClass = clazz;
+        while (true) {
+            if (currentClass.getSuperclass() != null) {
+                if (currentClass.equals(Event.class)) {
+                    return true;
+                }
+                currentClass = currentClass.getSuperclass();
+            } else {
+                return false;
+            }
+        }
     }
 }
