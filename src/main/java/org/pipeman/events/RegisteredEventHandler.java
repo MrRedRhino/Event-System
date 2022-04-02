@@ -19,4 +19,8 @@ public class RegisteredEventHandler {
     public void invokeMethod(Event event) throws InvocationTargetException, IllegalAccessException {
         method.invoke(this.obj, event);
     }
+
+    public Method getMethod() {
+        return method;
+    }
 }

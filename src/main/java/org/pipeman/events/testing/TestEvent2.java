@@ -10,6 +10,5 @@ public class TestEvent2 extends Event implements Cancellable {
     }
 
     @Override
-    public void setCancelled(boolean cancel) {
-    }
+    public void setCancelled(boolean cancel) {}
 }

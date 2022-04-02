@@ -16,6 +16,7 @@ public class TestListener implements Listener {
 
     @EventHandler
     public void onTest3Event(TestEvent3 event2) {
+        event2.setCancelled(true);
         System.out.println("event32");
     }
 }
